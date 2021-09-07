@@ -23,6 +23,7 @@ server.get('/citynames', (req, res) => {
     const name = req.query.name;
     const lat  = req.query.lat;
     const lon =req.query.lon;
+
     const result = weatherData.find((item) => {
         if (item.city_name === name || item.lat === lat ||item.lon === lon )
             {return item;}
@@ -32,19 +33,19 @@ server.get('/citynames', (req, res) => {
 
   result.data.map((element) => {
         let newArr = [];
-        newArr.push(new Forcast(element.weather.description, element.valid_date))
+        newArr.push(new Forcast(element.weather.description, element.valid_date,element.low_temp,element.high_temp))
      
-    res.status(200).send(newArr);
+        res.status(200).send(newArr);
 
-    })
+    });  
   
 
 
     
 }) 
-class Forcast {
-constructor(description,date){
-this.description= description;
+class Forcast  {
+constructor(description,date,low_temp,high_temp){
+this.description= `Low of ${low_temp}, high of${high_temp} with ${description}`
 this.date=date;
 }
 
