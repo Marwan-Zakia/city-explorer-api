@@ -10,7 +10,7 @@ server.use(cors());
 
 const PORT = process.env.PORT||3000;
 
-server.get('/hot', getWhether);
+server.get('/weather', getWhether);
 function getWhether(req, res) {
       let query = req.query.city;
       let url = `https://api.weatherbit.io/v2.0/forecast/daily?city=${query}&key=${process.env.key}`;
@@ -19,32 +19,63 @@ function getWhether(req, res) {
       .get(url)
       .then( result => {
         
-        let newPhoto =  result.data.data.map(item => {
-          return new Photo(item);
+        let newWeather =  result.data.data.map(item => {
+          return new Weather(item.weather.description, item.valid_date,item.low_temp,item.high_temp);
         })
     
         
-        res.send(newPhoto)
+        res.send(newWeather)
     })
       .catch(err => console.log(err))
     }
     
-    server.get('*', (req, res) => {
-      res.status(404).send({
-        code: 404,
-        message: 'not found'
-      })
-    })
+
+    class Weather {
+     constructor (description,date,low_temp,high_temp){
+        this.description = `Low of ${low_temp}, high of${high_temp} with ${description}`
+        this.date=date;
+      }}
+
+//
+server.get('/movie', getmovie);
+async function getmovie(req, res) {
+      let title = req.query.title;
+      let url2 = `https://api.themoviedb.org/3/search/movie?api_key=${process.env.kay}&query=${title}`;
     
+      axios
+      .get(url2)
+      .then( result => {
+          
+          let newMovie =  result.data.results.map(item => {
+              return new Movie(item.title, item.overview,item.poster_path);
+            })
+            res.send(newMovie)
+            console.log(newMovie)
+            
+    })
+      .catch(err => console.log(err))
+    }
+
+    class Movie {
+     constructor (title,poster_path,overview){
+        this.title = title;
+        this.poster_path=poster_path;
+        this.overview=overview;
+      }}
     server.get('/', (req, res) => {
     res.send('Hello from the home route')
 });
-function Photo(item) {
+server.get('*', (req, res) => {
+    res.status(404).send({
+      code: 404,
+      message: 'not found'
+    })
+  })
+      
 
-    this.description= `Low of ${item.data.low_temp}, high of${item.data.high_temp} with ${item.data.weather.description}`
-    this.date=item.data.date;
-  }
-
+server.listen(PORT, () => {
+    console.log(`Hello, I am listening on ${PORT}`);
+})
 
 // server.get('/citynames', (req, res) => {
 //     const name = req.query.name;
@@ -67,11 +98,3 @@ function Photo(item) {
     //   })
     // })
     
-    
-    server.get('*',(req,res)=>{
-        res.status(404).send('Sorry, page not found');
-    })
-    
-    server.listen(PORT, () => {
-        console.log(`Hello, I am listening on ${PORT}`);
-    })
